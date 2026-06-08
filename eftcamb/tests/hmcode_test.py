@@ -5,10 +5,10 @@ import unittest
 import numpy as np
 
 try:
-    import camb
+    import eftcamb
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
-    import camb
+    import eftcamb
 
 
 class HMcodeTest(unittest.TestCase):
@@ -129,7 +129,7 @@ class HMcodeTest(unittest.TestCase):
 
             # Set parameters using the traditional Fortran language
             # TODO: Check carefully against my ini files
-            pars = camb.CAMBparams(
+            pars = eftcamb.CAMBparams(
                 WantCls=False,
                 H0=H0,
                 ombh2=wb,
@@ -151,16 +151,16 @@ class HMcodeTest(unittest.TestCase):
             # Set sigma_8 normalisation (wasteful)
             if norm_sig8:
                 pars.set_matter_power(redshifts=[0.0], kmax=kmax_calc)
-                pars.NonLinear = camb.model.NonLinear_none
-                results = camb.get_results(pars)
+                pars.NonLinear = eftcamb.model.NonLinear_none
+                results = eftcamb.get_results(pars)
                 sig8_init = results.get_sigma8()
                 As = As * (sig8 / sig8_init) ** 2
                 pars.InitPower.set_params(As=As, ns=ns)  # Reset As
 
             # Main calculation step
             pars.set_matter_power(redshifts=z, kmax=kmax_calc)
-            pars.NonLinear = camb.model.NonLinear_both
-            results = camb.get_results(pars)
+            pars.NonLinear = eftcamb.model.NonLinear_both
+            results = eftcamb.get_results(pars)
             if verbose:
                 print(pars)
 
