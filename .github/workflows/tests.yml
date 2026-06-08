@@ -73,11 +73,11 @@ jobs:
 
       - name: Run tests
         run: |
-          python -c "import camb; print(camb.__version__)"
-          python -m unittest camb.tests.camb_test
+          python -c "import eftcamb; print(eftcamb.__version__)"
+          python -m unittest eftcamb.tests.camb_test
 
       - name: HM code tests
         if: matrix.os == 'ubuntu-latest'
         run: |
           git clone https://github.com/alexander-mead/HMcode_test_outputs.git
-          python -m unittest camb.tests.hmcode_test
+          python -m unittest eftcamb.tests.hmcode_test
