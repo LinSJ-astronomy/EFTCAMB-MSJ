@@ -3,14 +3,15 @@ requires = ["setuptools>=77", "packaging>=24.2", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "camb"
+name = "eftcamb"
 authors = [
+    { name = "EFTCAMB developers" },
     { name = "Antony Lewis" },
 ]
-description = "Code for Anisotropies in the Microwave Background"
-keywords = ['cosmology', 'CAMB', 'CMB']
+description = "EFTCAMB: Effective Field Theory for CAMB — a modified-gravity extension"
+keywords = ['cosmology', 'CAMB', 'CMB', 'EFTCAMB', 'modified gravity']
 readme = "docs/README_pypi.rst"
-license = "LicenseRef-LGPLv3-arxiv"
+license = "LicenseRef-GPLv3-arxiv"
 license-files = ["LICENCE.txt"]
 dynamic = ["version"]
 requires-python = ">=3.10.0"
@@ -35,17 +36,16 @@ docs = ["sphinx>=4.0", "sphinx_rtd_theme>=1.0", "sphinxcontrib-jquery", "sphinx_
 dev = ["ruff>=0.11.0", "pre-commit>=3.0.0"]
 
 [project.scripts]
-camb = "camb._command_line:run_command_line"
+eftcamb = "eftcamb._command_line:run_command_line"
 
 [project.urls]
-Homepage = "https://camb.info"
-Documentation = "https://camb.readthedocs.io"
-Source = "https://github.com/cmbant/camb"
-Tracker = "https://github.com/cmbant/camb/issues"
-Licensing = "https://github.com/cmbant/camb/blob/master/LICENCE.txt"
+Homepage = "https://eftcamb.github.io"
+Source = "https://github.com/LinSJ-astronomy/EFTCAMB-MSJ"
+Tracker = "https://github.com/LinSJ-astronomy/EFTCAMB-MSJ/issues"
+Licensing = "https://github.com/LinSJ-astronomy/EFTCAMB-MSJ/blob/eftcamb/LICENCE.txt"
 
 [tool.setuptools.dynamic]
-version = { attr = "camb.__version__" }
+version = { attr = "eftcamb.__version__" }
 
 [tool.ruff]
 line-length = 120
@@ -55,8 +55,8 @@ target-version = "py310"
 extend-select = ["I"]
 
 [tool.ruff.lint.per-file-ignores]
-"camb/__init__.py" = ["F401", "E402"]
-"camb/emission_angle.py" = ["E741"]
+"eftcamb/__init__.py" = ["F401", "E402"]
+"eftcamb/emission_angle.py" = ["E741"]
 "fortran/tests/CAMB_test_files.py" = ["E731"]
 "**/*.ipynb" = ["F405", "E501", "F403", "E402"]
 

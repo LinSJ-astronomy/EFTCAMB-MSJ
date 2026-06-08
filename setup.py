@@ -14,7 +14,7 @@ from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 file_dir = os.path.abspath(os.path.dirname(__file__))
 os.chdir(file_dir)
 
-sys.path.insert(0, os.path.join(file_dir, "camb"))
+sys.path.insert(0, os.path.join(file_dir, "eftcamb"))
 _compile: Any = __import__("_compilers")
 
 if _compile.is_windows:
@@ -95,7 +95,7 @@ def clean_dir(path, rmdir=False):
 def make_library(cluster=False):
     os.chdir(os.path.join(file_dir, "fortran"))
     pycamb_path = ".."
-    lib_file = os.path.join(pycamb_path, "camb", DLLNAME)
+    lib_file = os.path.join(pycamb_path, "eftcamb", DLLNAME)
     if _compile.is_windows or not _compile.check_ifort():
         ok, gfortran_version = _compile.check_gfortran(msg=True)
         if ok and "8.2.0" in gfortran_version:
@@ -182,16 +182,16 @@ def make_library(cluster=False):
         get_forutils()
         print("Compiling source...")
         subprocess.call(
-            "make python PYCAMB_OUTPUT_DIR=%s/camb/ CLUSTER_SAFE=%d"
+            "make python PYCAMB_OUTPUT_DIR=%s/eftcamb/ CLUSTER_SAFE=%d"
             % (pycamb_path, int(cluster if not os.getenv("GITHUB_ACTIONS") else 1)),
             shell=True,
         )
         subprocess.call("chmod 755 %s" % lib_file, shell=True)
 
-    if not os.path.isfile(os.path.join(pycamb_path, "camb", DLLNAME)):
+    if not os.path.isfile(os.path.join(pycamb_path, "eftcamb", DLLNAME)):
         sys.exit("Compilation failed")
     tem_file = "HighLExtrapTemplate_lenspotentialCls.dat"
-    tem = os.path.join(pycamb_path, "camb", tem_file)
+    tem = os.path.join(pycamb_path, "eftcamb", tem_file)
     if not os.path.exists(tem) or os.path.getmtime(tem) < os.path.getmtime(tem_file):
         shutil.copy(tem_file, tem)
 
@@ -274,7 +274,7 @@ class BuildExtCommand(build_ext):
 
 if __name__ == "__main__":
     setup(
-        name=os.getenv("CAMB_PACKAGE_NAME", "camb"),
+        name="eftcamb",
         zip_safe=False,
         cmdclass={
             "build_py": SharedLibrary,
@@ -288,11 +288,11 @@ if __name__ == "__main__":
             "install": InstallPlatlib,
             "build_ext": BuildExtCommand,
         },
-        ext_modules=[Extension("camb.camblib", [])],
-        packages=["camb", "camb.tests"],
+        ext_modules=[Extension("eftcamb.camblib", [])],
+        packages=["eftcamb", "eftcamb.tests"],
         platforms="any",
         package_data={
-            "camb": [
+            "eftcamb": [
                 DLLNAME,
                 "HighLExtrapTemplate_lenspotentialCls.dat",
                 "PArthENoPE_880.2_marcucci.dat",
