@@ -9,15 +9,17 @@ from scipy import integrate
 import copy
 
 ###############################################################################
-# import CAMB:
+# EFTCAMB MOD START: update the modified-gravity parameter-tree tutorial imports to target H-EFTCAMB.
+# import H-EFTCAMB:
 
 here = './'
-camb_path = os.path.realpath(os.path.join(os.getcwd(), here))
-sys.path.insert(0, camb_path)
-import camb
-camb.set_feedback_level(10)
-from camb import model, initialpower
-from camb.baseconfig import CAMBError
+eftcamb_path = os.path.realpath(os.path.join(os.getcwd(), here))
+sys.path.insert(0, eftcamb_path)
+import eftcamb
+eftcamb.set_feedback_level(10)
+from eftcamb import model, initialpower
+from eftcamb.baseconfig import CAMBError
+# EFTCAMB MOD END
 
 ###############################################################################
 # utility function to run parameter check:

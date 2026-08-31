@@ -6,38 +6,43 @@ from scipy import integrate
 import copy
 
 ###############################################################################
-# import CAMB:
+# EFTCAMB MOD START: update the tutorial imports to target the standalone H-EFTCAMB package.
+# import H-EFTCAMB:
 ###############################################################################
 
 #here = os.path.dirname(os.path.abspath(__file__))
 here = './'
-camb_path = os.path.realpath(os.path.join(os.getcwd(),here))
-sys.path.insert(0,camb_path)
-import camb
-camb.set_feedback_level(10)
-from camb import model, initialpower
-from camb.baseconfig import CAMBError
+eftcamb_path = os.path.realpath(os.path.join(os.getcwd(), here))
+sys.path.insert(0, eftcamb_path)
+import eftcamb
+eftcamb.set_feedback_level(10)
+from eftcamb import model, initialpower
+from eftcamb.baseconfig import CAMBError
+# EFTCAMB MOD END
 
 ###############################################################################
-# run CAMB in GR mode:
+# EFTCAMB MOD START: run the tutorial GR-limit calculation through eftcamb.
+# run H-EFTCAMB in the GR limit:
 ###############################################################################
 
 # set parameters:
-pars_LCDM = camb.set_params(As=2.12605e-9,
+pars_LCDM = eftcamb.set_params(As=2.12605e-9,
                             ns=0.96,
                             H0=67.,
                             ombh2=0.022445,
                             omch2=0.120557,
                             mnu=0.06,
                             tau=0.079)
-pars_LCDM.NonLinear = camb.model.NonLinear_none
+pars_LCDM.NonLinear = eftcamb.model.NonLinear_none
 # compute the spectra:
-results_LCDM = camb.get_results(pars_LCDM)
+results_LCDM = eftcamb.get_results(pars_LCDM)
+# EFTCAMB MOD END
 # get the power spectrum:
 LCDM_TT_spectrum = copy.deepcopy(results_LCDM.get_cmb_power_spectra(pars_LCDM, CMB_unit='muK')['total'][:,0])
 LCDM_ell = np.arange(LCDM_TT_spectrum.shape[0])
 
 ###############################################################################
+# EFTCAMB MOD START: run the modified-gravity tutorial calculation through eftcamb.
 # run EFTCAMB:
 ###############################################################################
 
@@ -47,7 +52,7 @@ eftcamb_params = {'EFTflag':1,
                   'EFTOmega0':1.0,
                   'feedback_level':10}
 
-pars_EFT = camb.set_params(As=2.12605e-9,
+pars_EFT = eftcamb.set_params(As=2.12605e-9,
                            ns=0.96,
                            H0=67.,
                            ombh2=0.022445,
@@ -55,9 +60,10 @@ pars_EFT = camb.set_params(As=2.12605e-9,
                            mnu=0.06,
                            tau=0.079,
                            **eftcamb_params)
-pars_EFT.NonLinear = camb.model.NonLinear_none
+pars_EFT.NonLinear = eftcamb.model.NonLinear_none
 # compute the spectra:
-results_EFT = camb.get_results(pars_EFT)
+results_EFT = eftcamb.get_results(pars_EFT)
+# EFTCAMB MOD END
 # get the power spectrum:
 EFT_TT_spectrum = copy.deepcopy(results_EFT.get_cmb_power_spectra(pars_EFT, CMB_unit='muK')['total'][:,0])
 EFT_ell = np.arange(EFT_TT_spectrum.shape[0])
@@ -162,7 +168,8 @@ plt.close('all')
 # example stability plot:
 ###############################################################################
 
-camb.set_feedback_level(0)
+# EFTCAMB MOD START: use eftcamb while scanning stability in the tutorial.
+eftcamb.set_feedback_level(0)
 
 par = np.linspace(-0.5,0.5,100)
 stability_result = []
@@ -172,7 +179,7 @@ for ind, par_val in enumerate(par):
                       'PureEFTmodelOmega':1,
                       'EFTOmega0':par_val,
                       'feedback_level':0}
-    pars = camb.set_params(lmax=2500,
+    pars = eftcamb.set_params(lmax=2500,
                            As=2.12605e-9,
                            ns=0.96,
                            H0=67.,
@@ -183,10 +190,11 @@ for ind, par_val in enumerate(par):
                            **eftcamb_params)
     # to get just the stability try setting the parameters and intercept:
     try:
-        results = camb.get_background(pars)
+        results = eftcamb.get_background(pars)
         stability_result.append(1.)
     except CAMBError:
         stability_result.append(0.)
+# EFTCAMB MOD END
 
 stability_result = np.array(stability_result)
 

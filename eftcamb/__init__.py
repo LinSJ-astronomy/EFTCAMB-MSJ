@@ -1,13 +1,15 @@
-"""
+# EFTCAMB MOD START: identify the standalone package as H-EFTCAMB rather than upstream CAMB.
+"""H-EFTCAMB, an effective-field-theory extension of CAMB.
 
-CAMB, Code for Anisotropies in the Microwave Background (https://camb.info)
 Computational modules are wrapped Fortran 2003, but can be used entirely from Python.
-
 """
+# EFTCAMB MOD END
 
 __author__ = "Antony Lewis"
 __contact__ = "antony at cosmologist dot info"
-__url__ = "https://camb.readthedocs.io"
+# EFTCAMB MOD START: expose the H-EFTCAMB project homepage in package metadata.
+__url__ = "https://eftcamb.github.io"
+# EFTCAMB MOD END
 __version__ = "1.6.5"
 
 from . import baseconfig

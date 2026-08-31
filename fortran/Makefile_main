@@ -24,7 +24,9 @@ Release: DLL_DIR = Releaselib
 Debug: DLL_DIR = Debuglib
 
 OUTPUT_DIR ?= Release
-PYCAMB_OUTPUT_DIR ?= ../camb
+# EFTCAMB MOD START: place the compiled Python library in the eftcamb package directory.
+PYCAMB_OUTPUT_DIR ?= ../eftcamb
+# EFTCAMB MOD END
 DLL_DIR ?= Releaselib
 
 

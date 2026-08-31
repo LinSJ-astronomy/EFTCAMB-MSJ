@@ -88,7 +88,9 @@ def check_gfortran(version=gfortran_min, msg=False, retry=False):
         raise Exception(
             f"You need ifort or gfortran {version} or higher to compile (found: {gfortran_version}).\n"
             "See https://camb.readthedocs.io/en/latest/fortran_compilers.htm\n"
-            "or install from pypi using pip ('pip install camb') to just use pre-built binary wheels."
+            # EFTCAMB MOD START: direct users to the standalone H-EFTCAMB wheel instead of upstream CAMB.
+            "or install from PyPI using pip ('pip install eftcamb') to use a pre-built binary wheel."
+            # EFTCAMB MOD END
         )
 
     return ok, gfortran_version

@@ -21,9 +21,10 @@ class tg_xboxphi_shoot(Theory):
     def initialize(self):
         if self.cosmo_path != None:
             sys.path.insert(1, self.cosmo_path)
-        import camb
-        from camb import CAMBError
-        self.cosmo_shooter = camb
+        import eftcamb
+        from eftcamb import CAMBError
+
+        self.cosmo_shooter = eftcamb
         self.cosmo_error = CAMBError
         
         self.extargs = {'dark_energy_model': 'EFTCAMB',
@@ -114,4 +115,3 @@ class tg_xboxphi_shoot(Theory):
         res = self.cosmo_shooter.get_background(pars, no_thermo=True)
         rlt = res.Params.EFTCAMB_parameter_cache.h0/self.h0 - 1
         return rlt
-

@@ -451,8 +451,9 @@ def get_matter_power_interpolator(
     Return a 2D spline interpolation object to evaluate matter power spectrum as function of z and k/h, e.g.
 
     .. code-block:: python
-
-       from camb import get_matter_power_interpolator
+    # EFTCAMB MOD START: make the public API example import the standalone eftcamb module.
+       from eftcamb import get_matter_power_interpolator
+    # EFTCAMB MOD END
 
        PK = get_matter_power_interpolator(params)
        print("Power spectrum at z=0.5, k/h=0.1/Mpc is %s (Mpc/h)^3 " % (PK.P(0.5, 0.1)))

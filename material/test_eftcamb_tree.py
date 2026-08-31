@@ -10,17 +10,19 @@ from scipy import integrate
 import copy
 
 ###############################################################################
-# import CAMB:
+# EFTCAMB MOD START: update the parameter-tree tutorial imports to target H-EFTCAMB.
+# import H-EFTCAMB:
 ###############################################################################
 
 #here = os.path.dirname(os.path.abspath(__file__))
 here = './'
-camb_path = os.path.realpath(os.path.join(os.getcwd(),here))
-sys.path.insert(0,camb_path)
-import camb
-camb.set_feedback_level(10)
-from camb import model, initialpower
-from camb.baseconfig import CAMBError
+eftcamb_path = os.path.realpath(os.path.join(os.getcwd(), here))
+sys.path.insert(0, eftcamb_path)
+import eftcamb
+eftcamb.set_feedback_level(10)
+from eftcamb import model, initialpower
+from eftcamb.baseconfig import CAMBError
+# EFTCAMB MOD END
 
 #Function to check parameters (it is a prototype still ... but it gets all the model with a double loop)
 
@@ -56,7 +58,9 @@ def check_params(eftcamb_params):
             return temp
             break
 
-        pars = camb.set_params(H0=67.3,**temp)
+        # EFTCAMB MOD START: create parameter objects from the standalone eftcamb module.
+        pars = eftcamb.set_params(H0=67.3, **temp)
+        # EFTCAMB MOD END
         read_par = pars.EFTCAMB.read_parameters()
 
         # This for loop controls the filling of the temp dictionary and assure that only parameter flag are updated
