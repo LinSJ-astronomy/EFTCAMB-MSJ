@@ -1,7 +1,16 @@
 include *.rst *.txt
+# EFTCAMB MOD START: include native source, runtime data, and all bundled licences in the source distribution.
+include README.md
+include LICENCE.txt
+include fortran/eftcamb/LICENSE
+include forutils/LICENSE
 recursive-include eftcamb *.py
-recursive-include fortran Makefile* *.dat *.?90 eftcamb*
+recursive-include fortran Makefile* *.dat *.f *.f90 *.F90 *.c eftcamb*
 recursive-include forutils Makefile* *.?90
+recursive-exclude fortran/Releaselib *
+recursive-exclude forutils/Releaselib *
+global-exclude *.o *.mod *.d
+# EFTCAMB MOD END
 exclude eftcamb/cambdll.dll
 exclude eftcamb/camblib.so
 include eftcamb/PArthENoPE_880.2_marcucci.dat

@@ -10,14 +10,21 @@ authors = [
 ]
 description = "EFTCAMB: Effective Field Theory for CAMB — a modified-gravity extension"
 keywords = ['cosmology', 'CAMB', 'CMB', 'EFTCAMB', 'modified gravity']
-readme = "docs/README_pypi.rst"
+# EFTCAMB MOD START: use a dedicated technical README for the standalone H-EFTCAMB PyPI project page.
+readme = "docs/README_eftcamb_pypi.rst"
+# EFTCAMB MOD END
 license = "LicenseRef-GPLv3-arxiv"
-license-files = ["LICENCE.txt"]
+# EFTCAMB MOD START: ship the H-EFTCAMB and ForUtils licence texts required by the distribution.
+license-files = ["LICENCE.txt", "fortran/eftcamb/LICENSE", "forutils/LICENSE"]
+# EFTCAMB MOD END
 dynamic = ["version"]
 requires-python = ">=3.10.0"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
-    "Operating System :: OS Independent",
+    # EFTCAMB MOD START: declare only the operating systems with planned binary wheel support.
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    # EFTCAMB MOD END
     "Environment :: Console",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Astronomy",
