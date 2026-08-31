@@ -1,4 +1,10 @@
+# EFTCAMB MOD START: load the built shared library to verify it is usable by the current Python process.
+import ctypes
+# EFTCAMB MOD END
 import os
+# EFTCAMB MOD START: detect the host architecture before accepting a native H-EFTCAMB build.
+import platform
+# EFTCAMB MOD END
 import shutil
 import subprocess
 import sys
@@ -92,6 +98,53 @@ def clean_dir(path, rmdir=False):
             os.rmdir(path)
 
 
+# EFTCAMB MOD START: fail packaging when native build commands, library output, architecture, or dynamic loading are invalid.
+def run_checked(command, **kwargs):
+    """Run a build command and propagate any failure to the packaging frontend."""
+    print("Running:", " ".join(command))
+    subprocess.run(command, check=True, **kwargs)
+
+
+def verify_library(library):
+    """Confirm that the newly compiled shared library matches and loads here."""
+    if not os.path.isfile(library):
+        raise OSError(f"Build did not produce the expected library: {library}")
+
+    machine = platform.machine().lower()
+    expected_architecture = {"amd64": "x86_64", "x86_64": "x86_64", "arm64": "arm64", "aarch64": "aarch64"}.get(
+        machine, machine
+    )
+    if platform.system() == "Darwin":
+        result = subprocess.run(["lipo", "-archs", library], check=True, capture_output=True, text=True)
+        architectures = set(result.stdout.split())
+    elif platform.system() == "Windows":
+        # ctypes.CDLL below rejects a DLL built for the wrong architecture;
+        # unlike macOS/Linux, Windows does not provide the `file` command.
+        architectures = {expected_architecture}
+    else:
+        result = subprocess.run(["file", "-b", library], check=True, capture_output=True, text=True)
+        description = result.stdout.lower()
+        architectures = set()
+        if "x86-64" in description or "x86_64" in description:
+            architectures.add("x86_64")
+        if "aarch64" in description:
+            architectures.add("aarch64")
+        if "arm64" in description:
+            architectures.add("arm64")
+
+    if expected_architecture not in architectures:
+        raise OSError(
+            f"Built library architecture {sorted(architectures) or ['unknown']} does not match "
+            f"the current runner ({expected_architecture})."
+        )
+
+    try:
+        ctypes.CDLL(os.path.abspath(library))
+    except OSError as error:
+        raise OSError(f"Built library cannot be loaded with ctypes: {library}") from error
+# EFTCAMB MOD END
+
+
 def make_library(cluster=False):
     os.chdir(os.path.join(file_dir, "fortran"))
     pycamb_path = ".."
@@ -174,22 +227,32 @@ def make_library(cluster=False):
         else:
             print("DLL up to date.")
     else:
-        if not _compile.call_command("make -v"):
-            raise OSError(
-                'Build failed - you must have "make" installed. '
-                'E.g. on ubuntu install with "sudo apt install make" (or use build-essential package).'
-            )
+        # EFTCAMB MOD START: rebuild from current sources instead of reusing a stale H-EFTCAMB shared library.
+        if shutil.which("make") is None:
+            raise OSError('Build failed - you must have "make" installed.')
         get_forutils()
+        # A wheel must never silently reuse a library produced by another
+        # commit or architecture.
+        if os.path.exists(lib_file):
+            os.remove(lib_file)
+        run_checked(["make", "clean"], cwd=os.getcwd(), env=_compile.compiler_environ)
         print("Compiling source...")
-        subprocess.call(
-            "make python PYCAMB_OUTPUT_DIR=%s/eftcamb/ CLUSTER_SAFE=%d"
-            % (pycamb_path, int(cluster if not os.getenv("GITHUB_ACTIONS") else 1)),
-            shell=True,
+        run_checked(
+            [
+                "make",
+                "python",
+                f"PYCAMB_OUTPUT_DIR={pycamb_path}/eftcamb/",
+                f"CLUSTER_SAFE={int(cluster if not os.getenv('GITHUB_ACTIONS') else 1)}",
+            ],
+            cwd=os.getcwd(),
+            env=_compile.compiler_environ,
         )
-        subprocess.call("chmod 755 %s" % lib_file, shell=True)
+        run_checked(["chmod", "755", lib_file])
+        # EFTCAMB MOD END
 
-    if not os.path.isfile(os.path.join(pycamb_path, "eftcamb", DLLNAME)):
-        sys.exit("Compilation failed")
+    # EFTCAMB MOD START: reject a completed build unless the package-local shared library loads successfully.
+    verify_library(lib_file)
+    # EFTCAMB MOD END
     tem_file = "HighLExtrapTemplate_lenspotentialCls.dat"
     tem = os.path.join(pycamb_path, "eftcamb", tem_file)
     if not os.path.exists(tem) or os.path.getmtime(tem) < os.path.getmtime(tem_file):
