@@ -27,22 +27,26 @@ For example, using conda, you can create a new environment and install the requi
 
     conda create -n HEFTCAMB_env gfortran gcc lapack numpy python sympy scipy packaging -c conda-forge
 
+<!-- EFTCAMB MOD START: direct source users to the independently published H-EFTCAMB repository. -->
 Clone the H-EFTCAMB code using
 
 ```
-git clone https://github.com/EFTCAMB/EFTCAMB.git --recursive
+git clone https://github.com/LinSJ-astronomy/EFTCAMB-MSJ.git --recursive
 ```
+<!-- EFTCAMB MOD END -->
 
 and navigate to the package directory and compile the code by typing:
 
     cd fortran
     make all
 
-This will compile both the ``camb`` executive and the python wrapper. The executive and python wrapper are independent of each other. If you intend to call H-EFTCAMB only through python (recommended), you can compile the python wrapper only by ``make python``. The compiled python library locates in the folder ``camb`` in the root directory and can be imported in the same way as the original ``CAMB`` by
+<!-- EFTCAMB MOD START: document the standalone eftcamb import and package-local native library location. -->
+This will compile both the H-EFTCAMB executive and the Python wrapper. The executive and Python wrapper are independent. If you intend to call H-EFTCAMB only through Python (recommended), compile the wrapper with ``make python``. The compiled Python library is placed in the root ``eftcamb`` folder and is imported as:
 
 ```
-import camb
+import eftcamb
 ```
+<!-- EFTCAMB MOD END -->
 
 **Note for Mac Users:**
 If you're using a Mac with an Apple Silicon chip (e.g., M1, M2), make sure you install the appropriate version of fortran and C compilers for your architecture (arm64), for example:
@@ -105,7 +109,9 @@ developing the H-EFTCAMB code as an academic undertaking.
 H-EFTCAMB is a modification of the CAMB code.
 The code part of CAMB that is not modified is copyrighted by the CAMB authors and released under their licence.
 
-For the part of code that constitutes H-EFTCAMB see the LICENSE file in ``eftcamb/LICENSE``.
+<!-- EFTCAMB MOD START: identify every licence bundled with the independent H-EFTCAMB distribution. -->
+For the H-EFTCAMB part of the code see ``fortran/eftcamb/LICENSE``. The bundled ForUtils licence is in ``forutils/LICENSE``.
+<!-- EFTCAMB MOD END -->
 
 ### 6. Build system target:
 
