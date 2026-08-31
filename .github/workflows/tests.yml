@@ -10,18 +10,22 @@ on:
 
 jobs:
   python_tests:
-    runs-on: ubuntu-latest
-    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != 'cmbant/camb')
+    runs-on: ${{ matrix.os }}
+    # EFTCAMB MOD START: test every supported Python version on Linux, where the native H-EFTCAMB build dependencies are installed below.
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: "Latest Python 3.10"
+          - name: "Python 3.10"
             os: ubuntu-latest
             python-version: "3.10"
-          - name: "Windows Python 3.14"
-            os: windows-latest
+          - name: "Python 3.12"
+            os: ubuntu-latest
+            python-version: "3.12"
+          - name: "Python 3.14"
+            os: ubuntu-latest
             python-version: "3.14"
+    # EFTCAMB MOD END
 
     steps:
       - uses: actions/checkout@v5
@@ -38,46 +42,34 @@ jobs:
       - run: ln -s $(which gfortran-14) /usr/local/bin/gfortran
         if: matrix.os == 'macos-latest'
 
-      # EFTCAMB MOD START
-      # disable format checks
-      # - name: Pre-commit checks
-      #   if: matrix.os == 'ubuntu-latest'
-      #   run: |
-      #     pip install pre-commit
-      #     pre-commit run --all-files
-
-      # - name: Format Help Message
-      #   if: failure() && matrix.os == 'ubuntu-latest'
-      #   run: |
-      #     echo "❌ Code formatting or style issues detected!"
-      #     echo ""
-      #     echo "Install pre-commit hooks to auto-format on commit:"
-      #     echo "  pip install -e .[dev]"
-      #     echo "  pre-commit install"
-      #     echo ""
-      #     echo "See the errors above for details."
-      #     exit 1
+      # EFTCAMB MOD START: re-enable formatting checks as a required release-PR gate.
+      - name: Pre-commit checks
+        run: |
+          python -m pip install pre-commit
+          pre-commit run --all-files --show-diff-on-failure
       # EFTCAMB MOD END
 
-      # EFTCAMB MOD START
-      # add additional EFTCAMB dependencies
+      # EFTCAMB MOD START: install the compiler and BLAS/LAPACK packages needed to build the H-EFTCAMB library in CI.
       - name: Install dependencies
         run: |
           python --version
-          gfortran --version
-          gcc --version
           sudo apt-get update
-          sudo apt-get install -y libblas-dev liblapack-dev
-          pip install -e .
+          sudo apt-get install -y gfortran libblas-dev liblapack-dev
+          python -m pip install --upgrade pip
+          python -m pip install -e '.[dev]'
+          python -m pip install 'camb==1.6.5'
       # EFTCAMB MOD END
 
       - name: Run tests
         run: |
           python -c "import eftcamb; print(eftcamb.__version__)"
           python -m unittest eftcamb.tests.camb_test
+          # EFTCAMB MOD START: cover independent CLI and same-process CAMB/H-EFTCAMB release behavior.
+          python -m unittest eftcamb.tests.release_test
+          # EFTCAMB MOD END
 
       - name: HM code tests
         if: matrix.os == 'ubuntu-latest'
         run: |
-          git clone https://github.com/alexander-mead/HMcode_test_outputs.git
+          git clone --depth=1 https://github.com/alexander-mead/HMcode_test_outputs.git
           python -m unittest eftcamb.tests.hmcode_test
