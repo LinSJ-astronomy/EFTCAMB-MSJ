@@ -2029,12 +2029,16 @@
     if (second_order_tightcoupling) ep=ep*2
     EV%TightSwitchoffTime = min(EV%ThermoData%tight_tau, EV%ThermoData%OpacityToTime(EV%k_buf/ep))
 
-    ! EFTCAMB MOD START: compute the time at which turn on EFT.
-    EV%EFTturnOnTime = State%DeltaTime( 0._dl, CP%EFTCAMB%EFTCAMB_pert_turn_on )
-    if ( CP%EFTCAMB%EFTflag /= 0 .and. EV%EFTturnOnTime < EV%ThermoData%tauminn ) then
-        call GlobalError(FormatString('EFTCAMB starts before thermo tauminn, ' //&
-            'EFT_pert_turn_on, EFTturnOnTime, tauminn = %f, %f, %f.', CP%EFTCAMB%EFTCAMB_pert_turn_on, EV%EFTturnOnTime, EV%ThermoData%tauminn))
-        return
+    ! EFTCAMB MOD START: do not read the EFT-only perturbation turn-on time for the GR default path.
+    if ( CP%EFTCAMB%EFTflag /= 0 ) then
+        EV%EFTturnOnTime = State%DeltaTime( 0._dl, CP%EFTCAMB%EFTCAMB_pert_turn_on )
+        if ( EV%EFTturnOnTime < EV%ThermoData%tauminn ) then
+            call GlobalError(FormatString('EFTCAMB starts before thermo tauminn, ' //&
+                'EFT_pert_turn_on, EFTturnOnTime, tauminn = %f, %f, %f.', CP%EFTCAMB%EFTCAMB_pert_turn_on, EV%EFTturnOnTime, EV%ThermoData%tauminn))
+            return
+        end if
+    else
+        EV%EFTturnOnTime = State%tau0 + 1._dl
     end if
     ! EFTCAMB MOD END
 
