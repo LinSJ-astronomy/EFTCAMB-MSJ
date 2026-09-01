@@ -32,8 +32,10 @@ jobs:
         # see https://github.com/actions/runner-images/tree/main
         os:
           [
-            macos-13,
-            macos-13-xlarge,
+            # EFTCAMB MOD START: temporarily disable Intel macOS runners because their queue time blocks release validation.
+            # macos-13,
+            # macos-13-xlarge,
+            # EFTCAMB MOD END
             macos-14,
             ubuntu-latest,
             ubuntu-24.04-arm,
@@ -152,7 +154,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, ubuntu-latest, ubuntu-24.04-arm]
+        os:
+          [
+            # EFTCAMB MOD START: temporarily disable Intel macOS wheel installation tests because their queue time blocks release validation.
+            # macos-13,
+            # EFTCAMB MOD END
+            macos-14,
+            ubuntu-latest,
+            ubuntu-24.04-arm,
+          ]
         python-version: ["3.10", "3.12", "3.14"]
 
     steps:
@@ -248,7 +258,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14, ubuntu-latest, ubuntu-24.04-arm]
+        os:
+          [
+            # EFTCAMB MOD START: temporarily disable Intel macOS TestPyPI installation tests because their queue time blocks release validation.
+            # macos-13,
+            # EFTCAMB MOD END
+            macos-14,
+            ubuntu-latest,
+            ubuntu-24.04-arm,
+          ]
 
     steps:
       - uses: actions/setup-python@v6
