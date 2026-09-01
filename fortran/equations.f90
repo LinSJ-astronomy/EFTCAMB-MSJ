@@ -17,14 +17,20 @@
     type(TEFTCAMB_timestep_cache) :: eft_cache
     ! EFTCAMB MOD END.
 
-    ! EFTCAMB MOD START: background equations
+    ! EFTCAMB MOD START: background equations; avoid reading the EFT-only turn-on time in the GR default path.
     grhoa2 = this%grho_no_de(a)
-    if ( this%CP%EFTCAMB%EFTFlag == 0 .or. a < this%CP%EFTCAMB%EFTCAMB_back_turn_on ) then
-        if ( this%CP%EFTCAMB%EFTFlag /= 0 ) then
-          grhov_t = 0._dl
+    if ( this%CP%EFTCAMB%EFTFlag == 0 ) then
+        call this%CP%DarkEnergy%BackgroundDensityAndPressure(this%grhov, a, grhov_t)
+        grhoa2 = grhoa2 + grhov_t * a**2
+        dtauda = sqrt(3 / grhoa2)
+        if (grhoa2 <= 0) then
+           call GlobalError('Universe stops expanding before today (recollapse not supported)', error_unsupported_params)
+           dtauda = 0
         else
-          call this%CP%DarkEnergy%BackgroundDensityAndPressure(this%grhov, a, grhov_t)
+           dtauda = sqrt(3 / grhoa2)
         end if
+    else if ( a < this%CP%EFTCAMB%EFTCAMB_back_turn_on ) then
+        grhov_t = 0._dl
         grhoa2 = grhoa2 + grhov_t * a**2
         dtauda = sqrt(3 / grhoa2)
         if (grhoa2 <= 0) then
