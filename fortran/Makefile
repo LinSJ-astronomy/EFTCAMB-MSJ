@@ -112,9 +112,25 @@ COMPILER = gfortran
 F90C     = gfortran
 # EFTCAMB MOD START: allow argument mismatch to compile odepack
 # lapack flags
-BLASFLAG = -lblas
-LAPACK_FLAG = -llapack
-COMMON_FFLAGS = -MMD -cpp -ffree-line-length-none -fallow-argument-mismatch -fmax-errors=4 -fopenmp $(BLASFLAG) $(LAPACK_FLAG)
+ifeq ($(shell uname -s),Darwin)
+# EFTCAMB MOD START: use the active Xcode SDK and its BLAS/LAPACK provider.
+MACOS_SDKROOT := $(shell xcrun --show-sdk-path)
+BLASFLAG ?= -framework Accelerate
+LAPACK_FLAG ?=
+MACOS_SYSROOT = -isysroot $(MACOS_SDKROOT)
+# EFTCAMB MOD END
+else
+BLASFLAG ?= -lblas
+LAPACK_FLAG ?= -llapack
+endif
+COMMON_FFLAGS = -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp $(BLASFLAG) $(LAPACK_FLAG)
+# EFTCAMB MOD START: GCC 6-9 accept the legacy ODEPACK interfaces by default
+# and do not recognize the compatibility flag introduced in GCC 10.
+ifneq ($(shell echo $(compiler_ver) | awk '{print ($$1 >= 10.0)}'),0)
+COMMON_FFLAGS += -fallow-argument-mismatch
+endif
+# EFTCAMB MOD END
+COMMON_FFLAGS += $(MACOS_SYSROOT)
 # original code:
 #COMMON_FFLAGS = -MMD -cpp -ffree-line-length-none -fmax-errors=4 -fopenmp
 # EFTCAMB MOD END
