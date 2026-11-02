@@ -8,6 +8,7 @@ from ctypes import c_double
 from . import model
 from ._config import config
 from .baseconfig import CAMB_Structure, CAMBValueError
+from .eftcamb import _convert_ini_value
 from .inifile import IniFile
 from .initialpower import InitialPowerLaw
 
@@ -70,6 +71,18 @@ def _massive_nu_method_value(mode_name: str) -> int:
 
 def _scalar_initial_condition_value(condition_name: str) -> int:
     return _initial_condition_names.index(condition_name)
+
+
+# EFTCAMB change Start
+def _eftcamb_ini_params(eftcamb) -> dict:
+    """Return model inputs, excluding derived quantities and runtime caches."""
+    if eftcamb is None:
+        return {}
+    # Use the upstream flag mapping and normalize equivalent Fortran/Python number spellings.
+    return {key: _convert_ini_value(value) for key, value in eftcamb.current_parameters().items()}
+
+
+# EFTCAMB change End
 
 
 def _update_source_terms_ini(params: model.CAMBparams, state: CambIniFile) -> None:
@@ -188,12 +201,14 @@ def _update_ini_state_from_params(params: model.CAMBparams, state: CambIniFile) 
     if params.scalar_initial_condition == "initial_vector":
         state.set_sequence("initial_vector", params.InitialConditionVector)
     state.set("use_cl_spline_template", params.use_cl_spline_template)
-
     # EFTCAMB MOD START: EFTCAMB parameters. The model parameters are held by the Fortran model, not by python fields:
     # write the parameters read at initialization, with the flags changed from python since then.
-    if params.EFTCAMB is not None and params.EFTCAMB.EFTflag != 0:
+    # EFTCAMB change Start
+    # Also write EFTflag=0 explicitly for GR configurations.
+    if params.EFTCAMB is not None:
         for key, value in params.EFTCAMB.current_parameters().items():
             state.set(key, value)
+    # EFTCAMB change End
     # EFTCAMB MOD END
 
 
@@ -234,7 +249,17 @@ def _roundtrip_mismatch(actual, expected, path: str = "params") -> str | None:
                 return mismatch
         return None
     if isinstance(actual, CAMB_Structure) and isinstance(expected, CAMB_Structure):
-        return _roundtrip_mismatch(actual.__getstate__(), expected.__getstate__(), path)
+        # EFTCAMB change Start
+        actual_state, expected_state = actual.__getstate__(), expected.__getstate__()
+        if isinstance(actual, model.CAMBparams) and isinstance(expected, model.CAMBparams):
+            for state in (actual_state, expected_state):
+                # The cache is calculated at runtime, not serialized as ini input.
+                state.pop("EFTCAMB_parameter_cache", None)
+                # Compare model inputs once, with normalized values rather than duplicate raw strings.
+                state.pop("EFTCAMB_parameters", None)
+                state["EFTCAMB"] = _eftcamb_ini_params(state["EFTCAMB"])
+        return _roundtrip_mismatch(actual_state, expected_state, path)
+        # EFTCAMB change End
     if (
         isinstance(actual, numbers.Real)
         and isinstance(expected, numbers.Real)
@@ -271,7 +296,8 @@ def write_ini(
 
         reparsed = read_ini(ini_path)
         expected = _roundtrip_expected_params(params)
-        if repr(reparsed) == repr(expected):
-            return
+        # EFTCAMB change Start
+        # Always compare normalized model inputs while ignoring derived runtime caches.
         if mismatch := _roundtrip_mismatch(reparsed, expected):
             raise CAMBValueError(f"Saved ini did not round-trip via read_ini ({ini_path}): {mismatch}")
+        # EFTCAMB change End
