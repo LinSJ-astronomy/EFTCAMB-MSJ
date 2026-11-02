@@ -40,8 +40,10 @@
     end type string
 
     ! real number that gets represented as a Nan:
-    !< there are situations where we need to initialize a variable to Nan...
-    real(dl), parameter :: double_NaN = transfer([real(Z'00000000'), real(Z'7FF80000')], 1.0_8)
+    ! EFTCAMB MOD START: use an integer BOZ conversion accepted by GCC 6-9
+    ! as well as newer compilers; avoid endian-dependent real-array bit packing.
+    real(dl), parameter :: double_NaN = transfer(int(Z'7FF8000000000000', kind=8), 0.0_dl)
+    ! EFTCAMB MOD END
 
     contains
 
