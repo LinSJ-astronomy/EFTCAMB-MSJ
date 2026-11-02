@@ -1,4 +1,6 @@
+import ctypes
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -18,7 +20,7 @@ from setuptools.command.install import install
 file_dir = os.path.abspath(os.path.dirname(__file__))
 os.chdir(file_dir)
 
-sys.path.insert(0, os.path.join(file_dir, "camb"))
+sys.path.insert(0, os.path.join(file_dir, "eftcamb"))
 _compile: Any = __import__("_compilers")
 
 if _compile.is_windows:
@@ -117,10 +119,57 @@ def remove_stale_dependency_files(build_dir, expected_forutils_path):
             os.remove(dep_path)
 
 
+def run_checked(command, **kwargs):
+    """Run a build command and propagate any failure to the packaging frontend."""
+    print("Running:", " ".join(command))
+    subprocess.run(command, check=True, **kwargs)
+
+
+def verify_library(library):
+    """Confirm that the newly compiled shared library matches and loads here."""
+    if not os.path.isfile(library):
+        raise OSError(f"Build did not produce the expected library: {library}")
+
+    machine = platform.machine().lower()
+    expected_architecture = {"amd64": "x86_64", "x86_64": "x86_64", "arm64": "arm64", "aarch64": "aarch64"}.get(
+        machine, machine
+    )
+    if platform.system() == "Darwin":
+        result = subprocess.run(["lipo", "-archs", library], check=True, capture_output=True, text=True)
+        architectures = set(result.stdout.split())
+    elif platform.system() == "Windows":
+        # ctypes.CDLL below rejects a DLL built for the wrong architecture;
+        # unlike macOS/Linux, Windows does not provide the `file` command.
+        architectures = {expected_architecture}
+    else:
+        result = subprocess.run(["file", "-b", library], check=True, capture_output=True, text=True)
+        description = result.stdout.lower()
+        architectures = set()
+        if "x86-64" in description or "x86_64" in description:
+            architectures.add("x86_64")
+        if "aarch64" in description:
+            architectures.add("aarch64")
+        if "arm64" in description:
+            architectures.add("arm64")
+
+    if expected_architecture not in architectures:
+        raise OSError(
+            f"Built library architecture {sorted(architectures) or ['unknown']} does not match "
+            f"the current runner ({expected_architecture})."
+        )
+
+    try:
+        ctypes.CDLL(os.path.abspath(library))
+    except OSError as error:
+        raise OSError(f"Built library cannot be loaded with ctypes: {library}") from error
+
+
 def make_library(cluster=False):
+    if _compile.is_windows:
+        raise RuntimeError("H-EFTCAMB native builds currently support Linux and macOS.")
     os.chdir(os.path.join(file_dir, "fortran"))
     pycamb_path = ".."
-    lib_file = os.path.join(pycamb_path, "camb", DLLNAME)
+    lib_file = os.path.join(pycamb_path, "eftcamb", DLLNAME)
     flang_command = None
     if _compile.is_windows:
         gfortran_ok, gfortran_version = _compile.check_gfortran()
@@ -327,7 +376,7 @@ def make_library(cluster=False):
                 # cambdll.dll so the OpenMP runtime is found without needing PATH changes, since
                 # Windows searches a loaded DLL's own directory when resolving its dependencies.
                 if libomp_dll and os.path.exists(libomp_dll):
-                    shutil.copy(libomp_dll, os.path.join(pycamb_path, "camb", "libomp.dll"))
+                    shutil.copy(libomp_dll, os.path.join(pycamb_path, "eftcamb", "libomp.dll"))
                 else:
                     print(
                         "WARNING: could not locate libomp.dll next to the flang executable; "
@@ -344,8 +393,9 @@ def make_library(cluster=False):
         fpath = get_forutils()
         remove_stale_dependency_files(os.path.join(file_dir, "fortran", "Releaselib"), fpath)
         remove_stale_dependency_files(os.path.join(file_dir, "fortran", "Debuglib"), fpath)
-        if os.path.exists(lib_file) and not os.access(lib_file, os.W_OK):
+        if os.path.exists(lib_file):
             os.remove(lib_file)
+        run_checked(["make", "clean"], env=_compile.compiler_environ)
         print("Compiling source...")
         # Wheel builds must not depend on the CPU features of the build host. The explicit
         # environment variable also works inside cibuildwheel's isolated Linux containers,
@@ -357,18 +407,21 @@ def make_library(cluster=False):
                 "1" if os.getenv("CIBUILDWHEEL") or os.getenv("GITHUB_ACTIONS") else "0",
             )
         )
-        subprocess.call(
-            f"make python PYCAMB_OUTPUT_DIR={pycamb_path}/camb/ CLUSTER_SAFE={cluster_safe}",
-            shell=True,
+        run_checked(
+            [
+                "make",
+                "python",
+                f"PYCAMB_OUTPUT_DIR={pycamb_path}/eftcamb/",
+                f"CLUSTER_SAFE={cluster_safe}",
+            ],
+            env=_compile.compiler_environ,
         )
+        run_checked(["chmod", "755", lib_file])
 
-        if os.path.isfile(lib_file):
-            subprocess.call(f"chmod 755 {lib_file}", shell=True)
+    verify_library(lib_file)
 
-    if not os.path.isfile(os.path.join(pycamb_path, "camb", DLLNAME)):
-        sys.exit("Compilation failed")
     tem_file = "HighLExtrapTemplate_lenspotentialCls.dat"
-    tem = os.path.join(pycamb_path, "camb", tem_file)
+    tem = os.path.join(pycamb_path, "eftcamb", tem_file)
     if not os.path.exists(tem) or os.path.getmtime(tem) < os.path.getmtime(tem_file):
         shutil.copy(tem_file, tem)
 
@@ -451,7 +504,7 @@ class BuildExtCommand(build_ext):
 
 if __name__ == "__main__":
     setup(
-        name=os.getenv("CAMB_PACKAGE_NAME", "camb"),
+        name=os.getenv("CAMB_PACKAGE_NAME", "eftcamb"),
         zip_safe=False,
         cmdclass={
             "build_py": SharedLibrary,
@@ -465,11 +518,11 @@ if __name__ == "__main__":
             "install": InstallPlatlib,
             "build_ext": BuildExtCommand,
         },
-        ext_modules=[Extension("camb.camblib", [])],
-        packages=["camb", "camb.tests"],
+        ext_modules=[Extension("eftcamb.camblib", [])],
+        packages=["eftcamb", "eftcamb.tests"],
         platforms="any",
         package_data={
-            "camb": [
+            "eftcamb": [
                 DLLNAME,
                 "libomp.dll",  # only present for Windows builds with COMPILER=flang; harmless if absent
                 "HighLExtrapTemplate_lenspotentialCls.dat",
