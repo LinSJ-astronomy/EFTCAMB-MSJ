@@ -1,6 +1,6 @@
 # Project Overview
 
-This is the CAMB Python cosmology code, wrapping Fortran 2003 for numerics.
+This is the H-EFTCAMB Python cosmology code, wrapping Fortran 2003 for numerics.
 
 ---
 
@@ -33,10 +33,10 @@ This is the CAMB Python cosmology code, wrapping Fortran 2003 for numerics.
 - If `python setup.py make` produces stale `.mod` type-mismatch errors, or errors after changing fortran type layout, run `python setup.py clean` first (not normally needed).
 
 ## Testing
-- **Default test:** `python -m unittest camb.tests.camb_test`. This may take more than 2 minutes, allow enough timeout.
-  - Do **not** run `camb.tests.hmcode_test` unless specifically relevant.
+- **Default test:** `python -m unittest eftcamb.tests.camb_test`. This may take more than 2 minutes, allow enough timeout.
+  - Do **not** run `eftcamb.tests.hmcode_test` unless specifically relevant.
 - **Long test** against precomputed results: `python fortran/tests/run_tests.py`, which calls `CAMB_test_files.py`. Only run this if explicitly asked.
-- For (hyper-)spherical Bessel functions and other mathutils run `python -m unittest camb.tests.mathutils_test`.
+- For (hyper-)spherical Bessel functions and other mathutils run `python -m unittest eftcamb.tests.mathutils_test`.
 
 ## Configuration
 - See `CONTRIBUTING.md` for installation, cloning, modification guidelines, contribution instructions, pre-commit setup, and VS Code configuration.
@@ -51,7 +51,7 @@ This is the CAMB Python cosmology code, wrapping Fortran 2003 for numerics.
 - When updating the version, update **both**:
   - the Python `__version__`, and
   - the version defined near the top of `fortran/config.f90`.
-- When adding new class or `.ini` file parameters, make sure to check python class write_ini or the corresponding `.ini` write logic in `camb/_ini.py`.
+- When adding new class or `.ini` file parameters, make sure to check python class write_ini or the corresponding `.ini` write logic in `eftcamb/_ini.py`.
 
 ---
 
@@ -59,5 +59,5 @@ This is the CAMB Python cosmology code, wrapping Fortran 2003 for numerics.
 - When plotting fractional differences for cross-spectra, use e.g. $\Delta TE / \sqrt{TT \cdot EE}$.
 - High-accuracy lensing spectra at high ell requires `lens_potential_accuracy = 8` or so (this mainly increases `kmax`).
 - In this latest version lens_potential_accuracy=None is normally the default (automatic accuracy for good enough)
-- Use `python -m camb.check_accuracy` to assess numerical stability by comparing a default run to a high-accuracy run.
+- Use `python -m eftcamb.check_accuracy` to assess numerical stability by comparing a default run to a high-accuracy run.
 - When testing timing, always discard first camb call (which precompute Bessels etc.)

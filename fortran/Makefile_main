@@ -30,7 +30,7 @@ Release: DLL_DIR = $(if $(CAMB_BUILD_DIR),$(CAMB_BUILD_DIR)/camb/Releaselib,Rele
 Debug: DLL_DIR = $(if $(CAMB_BUILD_DIR),$(CAMB_BUILD_DIR)/camb/Debuglib,Debuglib)
 
 OUTPUT_DIR ?= $(if $(CAMB_BUILD_DIR),$(CAMB_BUILD_DIR)/camb/Release,Release)
-PYCAMB_OUTPUT_DIR ?= ../camb
+PYCAMB_OUTPUT_DIR ?= ../eftcamb
 DLL_DIR ?= $(if $(CAMB_BUILD_DIR),$(CAMB_BUILD_DIR)/camb/Releaselib,Releaselib)
 
 
