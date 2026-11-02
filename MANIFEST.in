@@ -7,28 +7,42 @@ exclude *
 # Root metadata and packaging files.
 include LICENCE.txt
 include MANIFEST.in
-include README.rst
+include README.md
+include CAMB_README.rst
 include pyproject.toml
 include requirements.txt
 include setup.py
 
 # Package sources and bundled data.
-recursive-include camb *.py
+recursive-include eftcamb *.py
 # EFTCAMB MOD START: ship the EFTCAMB sources
-recursive-include fortran Makefile* *.dat *.?90 eftcamb*
+recursive-include fortran Makefile* *.dat *.f *.?90 *.c *.make *.dep
 # original code:
 # recursive-include fortran Makefile* *.dat *.?90
 # EFTCAMB MOD END
 recursive-include forutils Makefile* *.?90
 
-include camb/PArthENoPE_880.2_marcucci.dat
-include camb/PArthENoPE_880.2_standard.dat
-include camb/PRIMAT_Yp_DH_Error.dat
-include camb/PRIMAT_Yp_DH_ErrorMC_2021.dat
-include camb/PRIMAT_Yp_DH_ErrorMC_2024.dat
+include eftcamb/PArthENoPE_880.2_marcucci.dat
+include eftcamb/PArthENoPE_880.2_standard.dat
+include eftcamb/PRIMAT_Yp_DH_Error.dat
+include eftcamb/PRIMAT_Yp_DH_ErrorMC_2021.dat
+include eftcamb/PRIMAT_Yp_DH_ErrorMC_2024.dat
 
 # PyPI long description.
-include docs/README_pypi.rst
+include docs/README_eftcamb_pypi.rst
+include fortran/eftcamb/LICENSE
+include forutils/LICENSE
+prune fortran/eftcamb_test
+prune fortran/testfiles
+recursive-exclude fortran/Release *
+recursive-exclude fortran/Debug *
+recursive-exclude fortran/Releaselib *
+recursive-exclude fortran/Debuglib *
+recursive-exclude forutils/Release *
+recursive-exclude forutils/Debug *
+recursive-exclude forutils/Releaselib *
+recursive-exclude forutils/Debuglib *
+global-exclude *.o *.mod *.d
 
 # Built artifacts and optional/generated files are shipped separately or
 # rebuilt locally.
@@ -36,7 +50,7 @@ exclude .gitattributes
 exclude .gitignore
 exclude .gitmodules
 exclude .readthedocs.yml
-exclude camb/cambdll.dll
-exclude camb/libomp.dll
-exclude camb/camblib.so
-exclude camb/HighLExtrapTemplate_lenspotentialCls.dat
+exclude eftcamb/cambdll.dll
+exclude eftcamb/libomp.dll
+exclude eftcamb/camblib.so
+exclude eftcamb/HighLExtrapTemplate_lenspotentialCls.dat

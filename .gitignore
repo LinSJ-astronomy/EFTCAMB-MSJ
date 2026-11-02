@@ -45,7 +45,7 @@ fortran/ReleaseMPI/
 Advisor/
 Inspector/
 .ipynb_checkpoints
-camb/HighLExtrapTemplate_lenspotentialCls.dat
+eftcamb/HighLExtrapTemplate_lenspotentialCls.dat
 testfile*
 *.ipynb
 !CAMBdemo.ipynb
@@ -101,11 +101,11 @@ temp_test.py
 *.layout
 lensing_cgrads.f90
 # Exceptions for tracked .dat files
-!camb/PArthENoPE_880.2_marcucci.dat
-!camb/PArthENoPE_880.2_standard.dat
-!camb/PRIMAT_Yp_DH_Error.dat
-!camb/PRIMAT_Yp_DH_ErrorMC_2021.dat
-!camb/PRIMAT_Yp_DH_ErrorMC_2024.dat
+!eftcamb/PArthENoPE_880.2_marcucci.dat
+!eftcamb/PArthENoPE_880.2_standard.dat
+!eftcamb/PRIMAT_Yp_DH_Error.dat
+!eftcamb/PRIMAT_Yp_DH_ErrorMC_2021.dat
+!eftcamb/PRIMAT_Yp_DH_ErrorMC_2024.dat
 !fortran/HighLExtrapTemplate_lenspotentialCls.dat
 # Exceptions for tracked .ini files
 !inifiles/params.ini
