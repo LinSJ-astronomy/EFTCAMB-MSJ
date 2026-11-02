@@ -2,111 +2,46 @@ name: Test published packages
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Exact published eftcamb version to test
+        required: true
+        type: string
+      index:
+        description: Package index
+        required: true
+        default: pypi
+        type: choice
+        options: [pypi, testpypi]
 
 permissions:
   contents: read
 
 jobs:
   test-published-package:
-    name: ${{ matrix.source }} on ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - source: pypi
-            name: Linux x86_64
-            os: ubuntu-latest
-          - source: pypi
-            name: Linux aarch64
-            os: ubuntu-24.04-arm
-          - source: pypi
-            name: macOS x86_64
-            os: macos-26-intel
-          - source: pypi
-            name: macOS arm64
-            os: macos-latest
-          - source: pypi
-            name: Windows x86_64
-            os: windows-latest
-          - source: conda-forge
-            name: Linux x86_64
-            os: ubuntu-latest
-          - source: conda-forge
-            name: Linux aarch64
-            os: ubuntu-24.04-arm
-          - source: conda-forge
-            name: macOS x86_64
-            os: macos-26-intel
-          - source: conda-forge
-            name: macOS arm64
-            os: macos-latest
-          - source: conda-forge
-            name: Windows x86_64
-            os: windows-latest
-
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-15]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
-          fetch-depth: 0
-
-      - name: Get expected version from the latest release tag
-        id: version
-        shell: bash -el {0}
-        run: |
-          version=$(git tag --list --sort=-version:refname | grep -E '^(v)?[0-9]+(\.[0-9]+)*$' | head -n 1)
-          test -n "${version}"
-          echo "version=${version#v}" >> "${GITHUB_OUTPUT}"
-
-      - name: Set up Conda
-        uses: conda-incubator/setup-miniconda@v4
-        with:
-          auto-activate-base: false
-          channels: conda-forge
-          channel-priority: strict
-
-      - name: Create test environment
-        shell: bash -el {0}
-        run: conda create --yes --name camb-test --override-channels --channel conda-forge python=3.12 pip
-
-      - name: Install CAMB from PyPI
-        if: matrix.source == 'pypi'
-        shell: bash -el {0}
-        run: |
-          conda run --no-capture-output --name camb-test python -m pip install --upgrade pip
-          conda run --no-capture-output --name camb-test python -m pip install --only-binary=camb "camb==${{ steps.version.outputs.version }}"
-
-      - name: Install CAMB from conda-forge
-        if: matrix.source == 'conda-forge'
-        shell: bash -el {0}
-        run: |
-          conda install --yes --name camb-test --override-channels --channel conda-forge \
-            "camb=${{ steps.version.outputs.version }}"
-
-      - name: Verify version and calculate spectra
-        shell: bash -el {0}
+          python-version: "3.12"
+      - name: Install dependencies from PyPI
+        run: python -m pip install numpy scipy sympy packaging 'camb==1.6.5'
+      - name: Install requested eftcamb wheel
         env:
-          EXPECTED_VERSION: ${{ steps.version.outputs.version }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          PACKAGE_INDEX: ${{ inputs.index }}
         run: |
-          cd "${RUNNER_TEMP}"
-          conda run --no-capture-output --name camb-test python - <<'PY'
-          import importlib.metadata
-          import os
-
-          import numpy as np
-
-          import camb
-
-          expected_version = os.environ["EXPECTED_VERSION"]
-          installed_version = importlib.metadata.version("camb")
-          assert camb.__version__ == expected_version, (camb.__version__, expected_version)
-          assert installed_version == expected_version, (installed_version, expected_version)
-
-          params = camb.set_params(H0=67.5, ombh2=0.022, omch2=0.122, lmax=100)
-          spectra = camb.get_results(params).get_cmb_power_spectra(lmax=100, CMB_unit="muK")["total"]
-          assert spectra.shape == (101, 4), spectra.shape
-          assert np.isfinite(spectra).all()
-          assert spectra[100, 0] > 0
-
-          print(f"CAMB {camb.__version__} from {camb.__file__}")
-          PY
+          index_url=https://pypi.org/simple/
+          if [ "$PACKAGE_INDEX" = testpypi ]; then index_url=https://test.pypi.org/simple/; fi
+          python -m pip install --only-binary=:all: --no-deps --index-url "$index_url" "eftcamb==$RELEASE_VERSION"
+      - name: Verify installed release
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          python -c "import importlib.metadata, os, eftcamb; expected=os.environ['RELEASE_VERSION']; assert eftcamb.__version__ == expected; assert importlib.metadata.version('eftcamb') == expected"
+          python -m unittest eftcamb.tests.release_test
+          eftcamb --version

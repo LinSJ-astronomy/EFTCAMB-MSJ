@@ -161,10 +161,25 @@ def verify_library(library):
     try:
         ctypes.CDLL(os.path.abspath(library))
     except OSError as error:
-        raise OSError(f"Built library cannot be loaded with ctypes: {library}") from error
+        # EFTCAMB change Start
+        message = f"Built library cannot be loaded with ctypes: {library}: {error}"
+        if "executable stack" in str(error):
+            message += " On Linux, rebuild with gfortran 14 or newer to use heap trampolines."
+        raise OSError(message) from error
+        # EFTCAMB change End
 
 
 def make_library(cluster=False):
+    # EFTCAMB change Start
+    previous_directory = os.getcwd()
+    try:
+        _make_library(cluster)
+    finally:
+        os.chdir(previous_directory)
+    # EFTCAMB change End
+
+
+def _make_library(cluster=False):
     if _compile.is_windows:
         raise RuntimeError("H-EFTCAMB native builds currently support Linux and macOS.")
     os.chdir(os.path.join(file_dir, "fortran"))
@@ -425,8 +440,6 @@ def make_library(cluster=False):
     if not os.path.exists(tem) or os.path.getmtime(tem) < os.path.getmtime(tem_file):
         shutil.copy(tem_file, tem)
 
-    os.chdir(file_dir)
-
 
 class MakeLibrary(Command):
     user_options: ClassVar[list] = []
@@ -448,7 +461,12 @@ class MakeLibraryCluster(MakeLibrary):
 
 class SharedLibrary(build_py):
     def run(self):
-        make_library(False)
+        # EFTCAMB change Start
+        # setuptools can suppress custom build_py errors during editable installs.
+        # Let build_ext perform the native build in that case so failures propagate.
+        if not self.editable_mode:
+            make_library(False)
+        # EFTCAMB change End
         build_py.run(self)
 
 
@@ -496,10 +514,13 @@ class InstallPlatlib(install):
 
 
 class BuildExtCommand(build_ext):
-    """Ensure built extensions are added to the correct path in the wheel."""
+    """Build editable native libraries without suppressing compilation/load errors."""
 
     def run(self):
-        pass
+        # EFTCAMB change Start
+        if self.editable_mode:
+            make_library(False)
+        # EFTCAMB change End
 
 
 if __name__ == "__main__":

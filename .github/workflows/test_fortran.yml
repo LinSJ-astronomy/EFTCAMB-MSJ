@@ -29,11 +29,15 @@ jobs:
           python-version: "3.x"
 
       - name: Install dependencies and build module
+        # EFTCAMB MOD START
+        # install lapack and blas library
         run: |
+          sudo apt-get update
+          sudo apt-get install -y gfortran libblas-dev liblapack-dev
           python --version
           gfortran --version
           python -m pip install -e .
-
+        # EFTCAMB MOD END
       - name: Check failure artifact request
         id: failure_artifacts
         env:
@@ -47,14 +51,6 @@ jobs:
             upload=true
           fi
           echo "upload=${upload}" >> "${GITHUB_OUTPUT}"
-
-      # EFTCAMB MOD START
-      # install lapack and blas library
-      - name: Install BLAS and LAPACK
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libblas-dev liblapack-dev
-      # EFTCAMB MOD END
 
       - name: Run Build and Test Script
         run: python fortran/tests/run_tests.py --reference_branch v2 --verbose_diff_output
