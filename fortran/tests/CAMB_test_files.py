@@ -192,7 +192,7 @@ def get_check_accuracy_module():
     global _check_accuracy_module
     if _check_accuracy_module is None:
         ensure_camb_on_path()
-        from camb import check_accuracy
+        from eftcamb import check_accuracy
 
         _check_accuracy_module = check_accuracy
     return _check_accuracy_module
@@ -202,7 +202,7 @@ def get_recombination_module():
     global _recombination_module
     if _recombination_module is None:
         ensure_camb_on_path()
-        from camb import recombination
+        from eftcamb import recombination
 
         _recombination_module = recombination
     return _recombination_module
@@ -255,7 +255,7 @@ def check_accuracy_strict_reference_defaults():
 
 def make_ini_file(*args, **kwargs):
     ensure_camb_on_path()
-    from camb.inifile import IniFile
+    from eftcamb.inifile import IniFile
 
     return IniFile(*args, **kwargs)
 
@@ -488,7 +488,7 @@ def runScript(fname):
     try:
         if args.runner == "module":
             ensure_camb_on_path()
-            import camb
+            import eftcamb as camb
 
             camb.run_ini(fname, no_validate=args.no_validate)
             res = ""

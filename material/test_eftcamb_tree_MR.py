@@ -14,10 +14,10 @@ import copy
 here = './'
 camb_path = os.path.realpath(os.path.join(os.getcwd(), here))
 sys.path.insert(0, camb_path)
-import camb
+import eftcamb as camb
 camb.set_feedback_level(10)
-from camb import model, initialpower
-from camb.baseconfig import CAMBError
+from eftcamb import model, initialpower
+from eftcamb.baseconfig import CAMBError
 
 ###############################################################################
 # utility function to run parameter check:

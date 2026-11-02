@@ -806,7 +806,7 @@ def build_camb_params(
     lmax: int,
     pk_kmax: float,
 ):
-    import camb
+    import eftcamb as camb
 
     pars = camb.CAMBparams()
     pars.set_cosmology(
@@ -860,7 +860,7 @@ def run_compiled_camb_comparison(
     pk_kmax: float,
     reference_nqmax: int,
 ) -> None:
-    import camb
+    import eftcamb as camb
 
     cases = compiled_camb_cases(accuracy_boost, reference_nqmax)
     for case in cases:
