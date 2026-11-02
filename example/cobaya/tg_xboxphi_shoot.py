@@ -21,8 +21,8 @@ class tg_xboxphi_shoot(Theory):
     def initialize(self):
         if self.cosmo_path != None:
             sys.path.insert(1, self.cosmo_path)
-        import camb
-        from camb import CAMBError
+        import eftcamb as camb
+        from eftcamb import CAMBError
         self.cosmo_shooter = camb
         self.cosmo_error = CAMBError
         
