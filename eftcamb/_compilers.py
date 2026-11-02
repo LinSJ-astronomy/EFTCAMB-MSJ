@@ -101,7 +101,7 @@ def check_gfortran(version=gfortran_min, msg=False, retry=False):
         raise RuntimeError(
             f"You need ifort or gfortran {version} or higher to compile (found: {gfortran_version}).\n"
             "See https://camb.readthedocs.io/en/latest/fortran_compilers.htm\n"
-            "or install from pypi using pip ('pip install camb') to just use pre-built binary wheels."
+            "or install from pypi using pip ('pip install eftcamb') to just use pre-built binary wheels."
         )
 
     return ok, gfortran_version

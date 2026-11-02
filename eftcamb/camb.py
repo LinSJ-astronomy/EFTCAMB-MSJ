@@ -403,7 +403,8 @@ def validate_ini_file(filename):
         err = ""
         command = [
             sys.executable,
-            os.path.join(os.path.dirname(__file__), "_command_line.py"),
+            "-m",
+            "eftcamb._command_line",
             filename,
             "--validate",
         ]
@@ -505,7 +506,7 @@ def get_matter_power_interpolator(
 
     .. code-block:: python
 
-       from camb import get_matter_power_interpolator
+       from eftcamb import get_matter_power_interpolator
 
        PK = get_matter_power_interpolator(params)
        print("Power spectrum at z=0.5, k/h=0.1/Mpc is %s (Mpc/h)^3 " % (PK.P(0.5, 0.1)))

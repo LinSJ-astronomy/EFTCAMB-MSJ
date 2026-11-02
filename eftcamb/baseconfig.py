@@ -78,7 +78,7 @@ class MultiCompilerLoader(ctypes.CDLL):
 
 if not osp.isfile(CAMBL):
     sys.exit(
-        f"Library file {CAMBL} does not exist.\nMake sure you have installed or built the camb package "
+        f"Library file {CAMBL} does not exist.\nMake sure you have installed or built the eftcamb package "
         '(e.g. using "python setup.py make"); or remove any old conflicting installation and install again.'
     )
 
@@ -165,7 +165,7 @@ def check_fortran_version(version):
         raise CAMBFortranError(
             f"Version {fortran_version} of fortran library does not match python version ({version})."
             + '\nUpdate install or use "setup.py make" to rebuild library.'
-            + "\n(also check camb.__file__ is actually at the path you think you are loading)"
+            + "\n(also check eftcamb.__file__ is actually at the path you think you are loading)"
         )
 
 

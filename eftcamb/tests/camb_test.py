@@ -9,12 +9,12 @@ import unittest
 import numpy as np
 
 try:
-    import camb
+    import eftcamb as camb
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
-    import camb
-from camb import bbn, constants, correlations, dark_energy, inifile, initialpower, model, recombination, sources
-from camb.baseconfig import CAMBError, CAMBParamRangeError, CAMBValueError
+    import eftcamb as camb
+from eftcamb import bbn, constants, correlations, dark_energy, inifile, initialpower, model, recombination, sources
+from eftcamb.baseconfig import CAMBError, CAMBParamRangeError, CAMBValueError
 
 
 def new_def_params(**kwargs):
@@ -110,7 +110,7 @@ class CambTest(unittest.TestCase):
         pars = camb.set_params_cosmomc(cosmomc_params, lens_potential_accuracy=None)
         self.assertEqual(pars.max_eta_k, 72000)
 
-        from camb import check_accuracy
+        from eftcamb import check_accuracy
 
         class FakeAccuracyParams:
             DoLensing = True
@@ -143,7 +143,7 @@ class CambTest(unittest.TestCase):
         self.assertEqual(fake.set_for_lmax_calls[0][0], 800)
         self.assertEqual(fake.set_for_lmax_calls[0][1]["lens_output_margin"], 200)
 
-        from camb.sources import GaussianSourceWindow
+        from eftcamb.sources import GaussianSourceWindow
 
         pars = new_def_params()
         pars.SourceWindows = [GaussianSourceWindow(), GaussianSourceWindow(redshift=1)]
@@ -1029,7 +1029,7 @@ class CambTest(unittest.TestCase):
         pars.set_for_lmax(2000, lens_potential_accuracy=1)
         pars.WantTensors = True
         results = camb.get_transfer_functions(pars)
-        from camb import initialpower
+        from eftcamb import initialpower
 
         cls = []
         for r in [0, 0.2, 0.4]:
@@ -1083,11 +1083,11 @@ class CambTest(unittest.TestCase):
             H0=67.5, ombh2=0.022, omch2=0.122, As=2e-9, ns=0.95, redshifts=[0.4, 31.5], kmax=0.1, silent=True
         )
         pars.set_dark_energy(w=-0.7, wa=0.2, dark_energy_model="ppf")
-        from camb.sources import GaussianSourceWindow
+        from eftcamb.sources import GaussianSourceWindow
 
         pars.SourceWindows = [GaussianSourceWindow(), GaussianSourceWindow(redshift=1)]
         s = repr(pars)
-        pars2 = eval(s)
+        pars2 = eval(s, {"eftcamb": camb})
         assert repr(pars2) == s
         assert "DarkEnergyPPF" in str(pars2)
         b = pickle.dumps(pars)
@@ -1151,7 +1151,7 @@ class CambTest(unittest.TestCase):
         self.assertTrue(np.all(np.abs(sigmas[:, 0] / sigmas2[:, 0] - 1) < 2e-3))
 
     def testTimeTransfers(self):
-        from camb import initialpower
+        from eftcamb import initialpower
 
         pars = def_set_params(H0=69, YHe=0.22, lmax=2000, lens_potential_accuracy=1, ns=0.96, As=2.5e-9)
         results1 = camb.get_results(pars)
@@ -1267,7 +1267,7 @@ class CambTest(unittest.TestCase):
 
     # noinspection PyTypeChecker
     def testSources(self):
-        from camb.sources import GaussianSourceWindow, SplinedSourceWindow
+        from eftcamb.sources import GaussianSourceWindow, SplinedSourceWindow
 
         pars = new_def_params()
         pars.set_cosmology(H0=64, mnu=0)

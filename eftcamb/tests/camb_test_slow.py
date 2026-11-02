@@ -5,12 +5,12 @@ import unittest
 import numpy as np
 
 try:
-    import camb
-    from camb import check_accuracy, recombination
+    import eftcamb as camb
+    from eftcamb import check_accuracy, recombination
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
-    import camb
-    from camb import check_accuracy, recombination
+    import eftcamb as camb
+    from eftcamb import check_accuracy, recombination
 
 
 def _planck_recfast_set_params(**kwargs):
@@ -177,7 +177,7 @@ class CambSlowTest(unittest.TestCase):
             self.assertAlmostEqual(derived[name], expected_value, delta=5e-5 * abs(expected_value))
 
     def testSymbolic(self):
-        import camb.symbolic as s
+        import eftcamb.symbolic as s
 
         monopole_source, ISW, doppler, quadrupole_source = s.get_scalar_temperature_sources()
         temp_source = monopole_source + ISW + doppler + quadrupole_source
@@ -222,7 +222,7 @@ class CambSlowTest(unittest.TestCase):
         s.internal_consistency_checks()
 
     def test_extra_EmissionAnglePostBorn(self):
-        from camb import emission_angle, postborn
+        from eftcamb import emission_angle, postborn
 
         pars = _planck_recfast_set_params(H0=67.5, ombh2=0.022, omch2=0.122, As=2e-9, ns=0.95, tau=0.055)
         BB = emission_angle.get_emission_delay_BB(pars, lmax=3500)

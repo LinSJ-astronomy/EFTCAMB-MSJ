@@ -19,7 +19,7 @@ import sys
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, "../..")
-import camb
+import eftcamb as camb
 
 # -- General configuration ------------------------------------------------
 
@@ -59,7 +59,7 @@ autosummary_generate = True
 
 # Keep type alias names instead of expanding them in documentation
 autodoc_type_aliases = {
-    "Array1D": "camb.baseconfig.Array1D",
+    "Array1D": "eftcamb.baseconfig.Array1D",
     "NumberOrArray1D": "float | Array1D",
 }
 

@@ -585,7 +585,7 @@ def load_params(
     lens_output_margin: int | None = None,
     lens_potential_accuracy: float | None = None,
 ):
-    import camb
+    import eftcamb as camb
 
     params = camb.read_ini(str(ini_file), no_validate=no_validate)
     apply_lensing_settings(
@@ -607,7 +607,7 @@ def run_params_case(
     mpk_kmin: float,
     mpk_npoints: int,
 ) -> RunOutput:
-    import camb
+    import eftcamb as camb
 
     requested_matter_kmax = params.Transfer.kmax / (params.H0 / 100.0) if params.WantTransfer else None
     cpu_start = time.process_time()

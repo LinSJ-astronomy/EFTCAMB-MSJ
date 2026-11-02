@@ -9,12 +9,12 @@ from scipy.optimize import brentq
 from scipy.special import airy, spherical_jn
 
 try:
-    import camb
+    import eftcamb as camb
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
-    import camb  # noqa: F401
+    import eftcamb as camb  # noqa: F401
 
-from camb.mathutils import (
+from eftcamb.mathutils import (
     airy_ai_fast,
     airy_fast,
     chi_squared,

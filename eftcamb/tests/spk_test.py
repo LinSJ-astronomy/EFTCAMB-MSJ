@@ -6,13 +6,13 @@ import unittest
 import numpy as np
 
 try:
-    import camb
+    import eftcamb as camb
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
-    import camb
+    import eftcamb as camb
 
-from camb.nonlinear import Halofit, SPkNonLinear  # type: ignore[attr-defined]
-from camb.recombination import recfast_planck
+from eftcamb.nonlinear import Halofit, SPkNonLinear  # type: ignore[attr-defined]
+from eftcamb.recombination import recfast_planck
 
 
 def _planck_recfast_params(**kwargs):
