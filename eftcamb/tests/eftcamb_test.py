@@ -1,4 +1,4 @@
-"""Fast checks of the EFTCAMB Python interface (python -m unittest camb.tests.eftcamb_test).
+"""Fast checks of the EFTCAMB Python interface (python -m unittest eftcamb.tests.eftcamb_test).
 
 The EFTCAMB test models are read from fortran/eftcamb_test/parameters (relative to the package) with reduced
 accuracy settings (l_max_scalar = 600, no tensors, no source windows, k_max = 2/Mpc), so that each model runs in about
@@ -18,12 +18,12 @@ from ctypes import POINTER, byref, c_double, c_int
 import numpy as np
 
 try:
-    import camb
+    import eftcamb as camb
 except ImportError:
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
-    import camb
-from camb import eftcamb
-from camb.baseconfig import CAMBError, CAMBValueError
+    import eftcamb as camb
+from eftcamb import eftcamb
+from eftcamb.baseconfig import CAMBError, CAMBValueError
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 PARAMS = os.path.join(ROOT, "fortran", "eftcamb_test", "parameters")

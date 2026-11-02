@@ -4,9 +4,7 @@ import os
 import sys
 from argparse import RawTextHelpFormatter
 
-sys.path.insert(0, os.path.dirname(__file__))
-
-from baseconfig import filepath_to_fortran, lib_import
+from .baseconfig import filepath_to_fortran, lib_import
 
 
 def _get_version() -> str:
@@ -25,7 +23,7 @@ def _run_check_accuracy(argv: list[str]) -> int:
     except ImportError:
         import check_accuracy
 
-    return check_accuracy.main(argv, prog="camb check_accuracy")
+    return check_accuracy.main(argv, prog="eftcamb check_accuracy")
 
 
 def run_command_line():
@@ -34,11 +32,11 @@ def run_command_line():
 
     parser = argparse.ArgumentParser(
         formatter_class=RawTextHelpFormatter,
-        description="Python command line CAMB reading parameters from a .ini file."
+        description="Python command line H-EFTCAMB reading parameters from a .ini file."
         + "\n\nSample .ini files are provided in the source distribution, "
         "e.g. see inifiles/planck_2018.ini at "
-        "https://github.com/cmbant/CAMB/tree/master/inifiles"
-        + "\n\nUse 'camb check_accuracy INI_FILE ...' to compare results against a boosted-accuracy run.",
+        "https://github.com/EFTCAMB/EFTCAMB/tree/eftcamb/inifiles"
+        + "\n\nUse 'eftcamb check_accuracy INI_FILE ...' to compare results against a boosted-accuracy run.",
     )
     parser.add_argument("ini_file", help="text .ini file with parameter settings")
     parser.add_argument(

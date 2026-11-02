@@ -209,7 +209,7 @@ def get_bispectrum(params, bispectrum_params=None, output_root="", _debug_params
 
     For example::
 
-        from camb import bispectrum
+        from eftcamb import bispectrum
 
         pars = camb.set_params(lmax=600, lens_potential_accuracy=1)
         bpars = bispectrum.BispectrumParams(Slice_Base_L=10, deltas=[0, 2])
