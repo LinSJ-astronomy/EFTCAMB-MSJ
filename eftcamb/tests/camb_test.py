@@ -314,6 +314,82 @@ class CambTest(unittest.TestCase):
             self.assertEqual(ini.original_filename, main_ini)
             self.assertEqual(ini.int("a"), 1)
 
+    # EFTCAMB change Start
+    def testEFTCAMBParameterCacheDefaults(self):
+        from eftcamb.eftcamb import EFTCAMB_parameter_cache
+
+        parameters = (new_def_params(), def_set_params(H0=67.4, ombh2=0.0224, omch2=0.12))
+        for cache in (
+            EFTCAMB_parameter_cache(),
+            parameters[0].EFTCAMB_parameter_cache,
+            parameters[1].EFTCAMB_parameter_cache,
+        ):
+            for name, _ in cache.get_all_fields():
+                value = getattr(cache, name)
+                if isinstance(value, (int, float)):
+                    self.assertEqual(value, 0, name)
+                else:
+                    self.assertEqual(len(value), 0, name)
+
+    def testEFTCAMBIniRoundTrip(self):
+        from pathlib import Path
+
+        from eftcamb.tests.release_test import make_gr_parameters, make_rph_parameters
+
+        with tempfile.TemporaryDirectory() as directory:
+            for make_parameters in (make_gr_parameters, make_rph_parameters):
+                with self.subTest(model=make_parameters.__name__):
+                    parameters = make_parameters()
+                    if parameters.EFTCAMB.EFTflag:
+                        parameters.EFTCAMB.EFTCAMB_pert_turn_on = 0.03
+                    filename = Path(directory) / f"{make_parameters.__name__}.ini"
+                    parameters.write_ini(filename)
+                    restored = camb.read_ini(str(filename))
+                    self.assertEqual(restored.EFTCAMB.EFTflag, parameters.EFTCAMB.EFTflag)
+                    if parameters.EFTCAMB.EFTflag:
+                        self.assertEqual(restored.EFTCAMB.AltParEFTmodel, 1)
+                        self.assertEqual(restored.EFTCAMB.EFTCAMB_pert_turn_on, 0.03)
+                        self.assertEqual(restored.EFTCAMB.read_parameters()["RPHalphaM_ODE0"], 1.0)
+                    redshifts = [0.0, 0.5, 1.0]
+                    np.testing.assert_allclose(
+                        camb.get_background(restored).hubble_parameter(redshifts),
+                        camb.get_background(parameters).hubble_parameter(redshifts),
+                        rtol=1e-12,
+                    )
+
+    def testEFTCAMBIniIgnoresRuntimeCache(self):
+        from eftcamb._ini import _roundtrip_mismatch
+
+        parameters = def_set_params(H0=67.4, ombh2=0.0224, omch2=0.12)
+        restored = parameters.copy()
+        restored.EFTCAMB_parameter_cache.z_maxfrac_hdsk = float("nan")
+        self.assertIsNone(_roundtrip_mismatch(restored, parameters))
+        restored.H0 += 1
+        self.assertIn("params.H0", _roundtrip_mismatch(restored, parameters))
+
+    def testEFTCAMBIniDetectsModelParameterLoss(self):
+        from unittest.mock import patch
+
+        from eftcamb.tests.release_test import make_rph_parameters
+
+        parameters = make_rph_parameters()
+        inputs = {
+            key: value.decode("utf-8") if isinstance(value, bytes) else value
+            for key, value in parameters.EFTCAMB.read_parameters().items()
+        }
+        inputs["RPHalphaM_ODE0"] = 0.5
+        restored = parameters.copy()
+        restored.EFTCAMB.initialize_parameters(restored, inputs, print_header=False)
+        with tempfile.TemporaryDirectory() as directory:
+            filename = os.path.join(directory, "model_parameters.ini")
+            with (
+                patch("eftcamb.camb.read_ini", return_value=restored),
+                self.assertRaisesRegex(CAMBValueError, "RPHalphaM_ODE0"),
+            ):
+                parameters.write_ini(filename)
+
+    # EFTCAMB change End
+
     def testIniThetaInput(self):
         base_ini = os.path.join(os.path.dirname(__file__), "..", "..", "inifiles", "planck_2018.ini")
         base = camb.read_ini(base_ini)

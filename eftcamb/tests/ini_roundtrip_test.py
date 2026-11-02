@@ -17,5 +17,7 @@ class IniRoundTripTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             filename = Path(directory) / "parameters.ini"
             parameters.write_ini(filename)
-            restored = eftcamb.read_ini(filename)
+            # EFTCAMB change Start
+            restored = eftcamb.read_ini(str(filename))
+            # EFTCAMB change End
         self.assertAlmostEqual(restored.H0, parameters.H0)
